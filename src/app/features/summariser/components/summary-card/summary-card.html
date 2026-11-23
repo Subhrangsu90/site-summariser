@@ -1,0 +1,87 @@
+@let source = result().source;
+@let summary = result().summary;
+@let meta = result().meta;
+
+<article class="flex flex-col gap-5 rounded-2xl border border-hairline p-5 sm:p-6">
+  <header class="flex flex-col gap-3">
+    <div class="flex items-center justify-between gap-3 text-sm text-graphite">
+      <span class="flex min-w-0 items-center gap-2">
+        @if (source.favicon && !faviconFailed()) {
+          <img
+            class="size-4 shrink-0 rounded-sm"
+            alt=""
+            width="16"
+            height="16"
+            referrerpolicy="no-referrer"
+            [src]="source.favicon"
+            (error)="faviconFailed.set(true)"
+          />
+        }
+        <span class="truncate">{{ source.siteName }}</span>
+      </span>
+      <span class="shrink-0 rounded-full bg-mist px-2.5 py-0.5 text-xs" [title]="'Summarised with ' + meta.model">
+        {{ meta.provider === 'ollama' ? 'Local' : 'Cloud' }} · {{ meta.model }}
+      </span>
+    </div>
+
+    <h2 class="text-xl font-semibold leading-snug text-balance sm:text-2xl">{{ summary.title }}</h2>
+    <p class="leading-relaxed text-ink-soft">{{ summary.tldr }}</p>
+  </header>
+
+  <section class="flex flex-col gap-2">
+    <h3 class="text-sm font-medium text-graphite">Key points</h3>
+    <ul class="flex flex-col gap-2">
+      @for (point of summary.keyPoints; track $index) {
+        <li class="flex gap-3 leading-relaxed">
+          <span class="mt-2.5 size-1.5 shrink-0 rounded-full bg-ink" aria-hidden="true"></span>
+          <span>{{ point }}</span>
+        </li>
+      }
+    </ul>
+  </section>
+
+  @if (meta.truncated) {
+    <p class="rounded-xl bg-warning-surface px-3 py-2 text-sm text-warning">
+      Long page: this summary covers the first part.
+    </p>
+  }
+
+  <footer class="flex flex-col gap-3 border-t border-hairline pt-4 text-sm text-graphite">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <span>{{ summary.readingTimeMin | readingTime }} · summarised in {{ meta.ms | duration }}</span>
+      <a
+        class="font-medium text-ink underline-offset-4 hover:underline"
+        target="_blank"
+        rel="noopener noreferrer"
+        [href]="source.url"
+      >
+        Read the original<span class="sr-only"> (opens in a new tab)</span> ↗
+      </a>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        class="rounded-lg border border-hairline px-3 py-1.5 font-medium text-ink hover:bg-hover"
+        (click)="copy('text')"
+      >
+        {{ copied() === 'text' ? 'Copied ✓' : 'Copy' }}
+      </button>
+      <button
+        type="button"
+        class="rounded-lg border border-hairline px-3 py-1.5 font-medium text-ink hover:bg-hover"
+        (click)="copy('markdown')"
+      >
+        {{ copied() === 'markdown' ? 'Copied ✓' : 'Copy as Markdown' }}
+      </button>
+      @if (copied() === 'failed') {
+        <span class="text-danger-strong">Couldn't copy. Select the text instead.</span>
+      }
+      <span class="sr-only" aria-live="polite">
+        @if (copied() === 'text' || copied() === 'markdown') {
+          Copied to clipboard
+        }
+      </span>
+    </div>
+  </footer>
+</article>

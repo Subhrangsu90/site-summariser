@@ -7,7 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:site-summariser": "node dist/site-summariser/server/server.mjs"
+    "serve:ssr:site-summariser": "node dist/site-summariser/server/server.mjs",
+    "test:server": "vitest run --config vitest.server.config.mts",
+    "test:all": "npm run test:server && ng test --watch=false",
+    "start:prod": "node dist/site-summariser/server/server.mjs"
   },
   "private": true,
   "packageManager": "npm@11.6.4",
@@ -20,9 +23,14 @@
     "@angular/platform-server": "^22.1.0",
     "@angular/router": "^22.1.0",
     "@angular/ssr": "^22.1.6",
+    "@genkit-ai/google-genai": "^1.44.0",
+    "@mozilla/readability": "^0.6.0",
     "express": "^5.1.0",
+    "genkit": "^1.44.0",
+    "jsdom": "^28.0.0",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@angular/build": "^22.1.6",
@@ -30,12 +38,15 @@
     "@angular/compiler-cli": "^22.1.0",
     "@tailwindcss/postcss": "^4.1.12",
     "@types/express": "^5.0.1",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20.17.19",
-    "jsdom": "^28.0.0",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
     "tailwindcss": "^4.1.12",
     "typescript": "~6.0.2",
     "vitest": "^4.0.8"
+  },
+  "engines": {
+    "node": ">=22.12"
   }
 }

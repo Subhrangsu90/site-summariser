@@ -42,3 +42,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Secrets and account-specific IDs
+.env
+# Vercel CLI local project link
+.vercel

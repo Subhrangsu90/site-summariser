@@ -1,0 +1,43 @@
+<main class="mx-auto flex w-full max-w-2xl flex-col gap-8 px-4 py-10 sm:py-16">
+  <header class="flex flex-col gap-2">
+    <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Site Summariser</h1>
+    <p class="text-graphite">Paste a link to a public article and get the key points in seconds.</p>
+  </header>
+
+  @if (setupProblem(); as problem) {
+    <div role="status" class="flex flex-col gap-1 rounded-2xl bg-warning-surface p-4 text-sm text-warning">
+      <p class="font-medium">{{ problem.title }}</p>
+      <ul class="flex flex-col gap-0.5">
+        @for (line of problem.lines; track $index) {
+          <li>{{ line }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <app-url-form [loading]="summary.isLoading()" [providers]="providers()" (submitted)="summarise($event)" />
+
+  <section #resultRegion class="scroll-mt-6" aria-live="polite" [attr.aria-busy]="summary.isLoading()">
+    @if (summary.isLoading()) {
+      <app-loading-skeleton [provider]="request()?.provider" />
+    } @else if (error(); as err) {
+      <app-error-state [error]="err" (retry)="retry()" />
+    } @else if (result(); as current) {
+      <app-summary-card [result]="current" />
+    } @else {
+      <p class="rounded-2xl border border-dashed border-hairline p-6 text-center text-sm text-graphite">
+        Your summary will appear here. Try a news story, a blog post or a Wikipedia article.
+      </p>
+    }
+  </section>
+
+  @if (historyItems().length) {
+    <app-history-list
+      [entries]="historyItems()"
+      [activeId]="reopened()?.id"
+      (open)="reopen($event)"
+      (remove)="removeFromHistory($event)"
+      (clear)="clearHistory()"
+    />
+  }
+</main>

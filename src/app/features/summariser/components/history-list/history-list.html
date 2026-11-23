@@ -1,0 +1,35 @@
+<section class="flex flex-col gap-3" aria-labelledby="history-title">
+  <div class="flex items-center justify-between">
+    <h2 id="history-title" class="text-sm font-medium text-graphite">Recent summaries</h2>
+    <button type="button" class="rounded-lg px-2 py-1 text-sm text-graphite hover:bg-hover hover:text-ink" (click)="clear.emit()">
+      Clear all
+    </button>
+  </div>
+
+  <ul class="flex flex-col divide-y divide-hairline overflow-hidden rounded-2xl border border-hairline">
+    @for (entry of entries(); track entry.id) {
+      <li class="flex items-center" [class.bg-mist]="entry.id === activeId()">
+        <button
+          type="button"
+          class="flex min-w-0 flex-1 flex-col items-start gap-0.5 px-4 py-3 text-left hover:bg-hover"
+          [attr.aria-current]="entry.id === activeId() ? 'true' : null"
+          (click)="open.emit(entry)"
+        >
+          <span class="w-full truncate font-medium">{{ entry.result.summary.title }}</span>
+          <span class="w-full truncate text-xs text-graphite">
+            {{ entry.result.source.siteName }} · {{ modeLabels[entry.mode] }} · {{ entry.result.meta.model }} ·
+            {{ entry.savedAt | relativeTime }}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="mr-2 rounded-lg px-2.5 py-1.5 text-graphite hover:bg-hover hover:text-ink"
+          [attr.aria-label]="'Remove ' + entry.result.summary.title"
+          (click)="remove.emit(entry.id)"
+        >
+          <span aria-hidden="true">✕</span>
+        </button>
+      </li>
+    }
+  </ul>
+</section>

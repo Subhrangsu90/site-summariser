@@ -1,0 +1,45 @@
+# Runs on every push to the main branches and on every pull request:
+# install → server tests → Angular tests → production build.
+# Deploys are handled by Vercel's GitHub integration, not here.
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the older run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Test and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Server tests (Node)
+        run: npm run test:server
+
+      - name: Angular tests
+        run: npx ng test --watch=false
+
+      - name: Production build
+        run: npm run build

@@ -6,23 +6,20 @@ import {
 } from '@angular/ssr/node';
 import express from 'express';
 import { join } from 'node:path';
+import { createApiRouter } from './server/api/api.router';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
+app.disable('x-powered-by');
+
 /**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
+ * The API: fetches pages and calls the AI on the server, so the browser never
+ * hits CORS and never sees the API key. Registered before the Angular handler.
  */
+app.use('/api', createApiRouter());
 
 /**
  * Serve static files from /browser

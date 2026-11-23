@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "eff60d4a-d03e-42fd-9536-af7a9b70fc98"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -30,11 +31,17 @@
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
-              "allowedHosts": []
+              "allowedHosts": ["localhost", "127.0.0.1", "*.vercel.app"]
             },
             "ssr": {
               "entry": "src/server.ts"
-            }
+            },
+            "externalDependencies": [
+              "jsdom",
+              "@mozilla/readability",
+              "genkit",
+              "@genkit-ai/google-genai"
+            ]
           },
           "configurations": {
             "production": {
@@ -73,7 +80,10 @@
           "defaultConfiguration": "development"
         },
         "test": {
-          "builder": "@angular/build:unit-test"
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "exclude": ["server/**"]
+          }
         }
       }
     }

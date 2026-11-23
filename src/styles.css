@@ -1,3 +1,148 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+/*
+ * site-summarizer design tokens. Same zinc theme as before, made explicit.
+ *   paper   #FFFFFF  reading surface
+ *   ink     #18181B  text, your messages, primary actions   (zinc-900)
+ *   graphite #71717A secondary text                          (zinc-500)
+ *   mist    #F4F4F5  sidebar, hovers                         (zinc-100)
+ *   hairline #E4E4E7 every border                            (zinc-200)
+ *   signals: emerald / amber / red, for status dots only
+ */
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+    --color-paper: #ffffff;
+    --color-ink: #18181b;
+    --color-graphite: #71717a;
+    --color-mist: #f4f4f5;
+    --color-hairline: #e4e4e7;
+
+    /* Semantic colors, so nothing in a template names a light-only shade. */
+    --color-ink-soft: #3f3f46;
+    /* rail items, secondary buttons */
+    --color-ink-hover: #3f3f46;
+    /* hover on ink buttons */
+    --color-hover: rgb(228 228 231 / 0.6);
+    /* hover on quiet rows */
+    --color-bubble: #18181b;
+    /* your chat messages */
+    --color-on-bubble: #ffffff;
+    --color-danger-surface: #fef2f2;
+    --color-danger-hover: #fee2e2;
+    --color-danger-ring: #fecaca;
+    --color-danger: #991b1b;
+    --color-danger-strong: #b91c1c;
+    --color-success-surface: #ecfdf5;
+    --color-success: #064e3b;
+    --color-warning-surface: #fffbeb;
+    --color-warning: #78350f;
+}
+
+/*
+ * Dark mode. "System" (no data-theme) follows the OS; Settings can force light or
+ * dark, stored in this browser and applied before first paint (see index.html).
+ * Only the tokens change, so every utility and the A2UI cards follow.
+ */
+:root {
+    color-scheme: light;
+}
+
+/* The same values twice: once for "System" on a dark OS, once for "Dark" chosen in Settings. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+        color-scheme: dark;
+        --color-paper: #161618;
+        --color-ink: #ececee;
+        --color-graphite: #a1a1aa;
+        --color-mist: #222225;
+        --color-hairline: #2f2f33;
+        --color-ink-soft: #d4d4d8;
+        --color-ink-hover: #d4d4d8;
+        --color-hover: rgb(255 255 255 / 0.06);
+        --color-bubble: #2f2f33;
+        --color-on-bubble: #ececee;
+        --color-danger-surface: rgb(127 29 29 / 0.28);
+        --color-danger-hover: rgb(127 29 29 / 0.45);
+        --color-danger-ring: rgb(185 28 28 / 0.55);
+        --color-danger: #fca5a5;
+        --color-danger-strong: #f87171;
+        --color-success-surface: rgb(6 78 59 / 0.35);
+        --color-success: #6ee7b7;
+        --color-warning-surface: rgb(120 53 15 / 0.32);
+        --color-warning: #fcd34d;
+    }
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+    --color-paper: #161618;
+    --color-ink: #ececee;
+    --color-graphite: #a1a1aa;
+    --color-mist: #222225;
+    --color-hairline: #2f2f33;
+    --color-ink-soft: #d4d4d8;
+    --color-ink-hover: #d4d4d8;
+    --color-hover: rgb(255 255 255 / 0.06);
+    --color-bubble: #2f2f33;
+    --color-on-bubble: #ececee;
+    --color-danger-surface: rgb(127 29 29 / 0.28);
+    --color-danger-hover: rgb(127 29 29 / 0.45);
+    --color-danger-ring: rgb(185 28 28 / 0.55);
+    --color-danger: #fca5a5;
+    --color-danger-strong: #f87171;
+    --color-success-surface: rgb(6 78 59 / 0.35);
+    --color-success: #6ee7b7;
+    --color-warning-surface: rgb(120 53 15 / 0.32);
+    --color-warning: #fcd34d;
+}
+
+:root {
+    /* A2UI cards (rendered in shadow DOM) pick these up, so cards match the app. */
+    --a2ui-color-background: var(--color-paper);
+    --a2ui-color-on-background: var(--color-ink);
+    --a2ui-color-surface: var(--color-paper);
+    --a2ui-color-on-surface: var(--color-ink);
+    --a2ui-color-primary: var(--color-ink);
+    --a2ui-color-on-primary: var(--color-paper);
+    --a2ui-color-secondary: var(--color-mist);
+    --a2ui-color-on-secondary: var(--color-ink);
+    --a2ui-color-border: var(--color-hairline);
+    --a2ui-font-family-title: inherit;
+    --a2ui-font-size: 0.9375rem;
+    --a2ui-font-scale: 1.15;
+    /* Explicit small sizes: the scale alone made captions 10.6px. */
+    --a2ui-font-size-s: 0.875rem;
+    --a2ui-font-size-xs: 0.8125rem;
+    --a2ui-line-height-body: 1.5;
+    --a2ui-card-background: var(--color-paper);
+    --a2ui-card-border-radius: 14px;
+    /* One hairline border, no shadow, no outer margin: cards align with the text column. */
+    --a2ui-card-border: 1px solid var(--color-hairline);
+    --a2ui-card-box-shadow: none;
+    --a2ui-card-margin: 0;
+    --a2ui-card-padding: 1rem 1.125rem;
+    --a2ui-button-border-radius: 9999px;
+    --a2ui-button-font-weight: 500;
+    --a2ui-text-caption-color: var(--color-graphite);
+}
+
+@layer base {
+
+    html,
+    body {
+        height: 100%;
+        background: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        font-size: 15px;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* One focus style everywhere: a clear ink ring, only for keyboard focus. */
+    :focus-visible {
+        outline: 2px solid var(--color-ink);
+        outline-offset: 2px;
+        border-radius: 6px;
+    }
+}

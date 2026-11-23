@@ -1,0 +1,67 @@
+<form class="flex flex-col gap-5" novalidate (submit)="onSubmit($event)">
+  <div class="flex flex-col gap-2">
+    <label for="page-url" class="text-sm font-medium">Page address</label>
+    <div class="flex flex-col gap-2 sm:flex-row">
+      <input
+        id="page-url"
+        type="url"
+        inputmode="url"
+        autocomplete="url"
+        spellcheck="false"
+        placeholder="https://example.com/article"
+        class="min-w-0 flex-1 rounded-xl border border-hairline bg-paper px-4 py-3 text-base placeholder:text-graphite focus:border-ink focus:outline-none"
+        [formField]="urlForm.url"
+        [attr.aria-describedby]="urlError() ? 'page-url-error' : null"
+      />
+      <button
+        type="submit"
+        class="rounded-xl bg-ink px-5 py-3 font-medium text-paper transition-colors hover:bg-ink-hover disabled:cursor-not-allowed disabled:opacity-40"
+        [disabled]="loading() || urlForm().invalid()"
+      >
+        {{ loading() ? 'Summarising…' : 'Summarise' }}
+      </button>
+    </div>
+    @if (urlError(); as message) {
+      <p id="page-url-error" class="text-sm text-danger-strong">{{ message }}</p>
+    }
+  </div>
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <fieldset class="flex flex-col gap-2">
+      <legend class="mb-2 text-sm text-graphite">Summary style</legend>
+      <div class="flex flex-wrap gap-1.5">
+        <label class="segment" title="2–3 sentences and 3 key points">
+          <input type="radio" class="sr-only" value="tldr" [formField]="urlForm.mode" />
+          TL;DR
+        </label>
+        <label class="segment" title="One sentence and 5–7 key points">
+          <input type="radio" class="sr-only" value="bullets" [formField]="urlForm.mode" />
+          Bullets
+        </label>
+        <label class="segment" title="A paragraph and up to 8 key points">
+          <input type="radio" class="sr-only" value="detailed" [formField]="urlForm.mode" />
+          Detailed
+        </label>
+      </div>
+    </fieldset>
+
+    <fieldset class="flex flex-col gap-2">
+      <legend class="mb-2 text-sm text-graphite">AI model</legend>
+      <div class="flex flex-wrap gap-1.5">
+        <label class="segment" [class.unavailable]="!isAvailable('gemini')" [title]="modelName('gemini')">
+          <input type="radio" class="sr-only" value="gemini" [formField]="urlForm.provider" />
+          <span class="dot" [class.on]="isAvailable('gemini')" aria-hidden="true"></span>
+          Gemini <span class="text-xs opacity-70">cloud</span>
+        </label>
+        <label class="segment" [class.unavailable]="!isAvailable('ollama')" [title]="modelName('ollama')">
+          <input type="radio" class="sr-only" value="ollama" [formField]="urlForm.provider" />
+          <span class="dot" [class.on]="isAvailable('ollama')" aria-hidden="true"></span>
+          Gemma <span class="text-xs opacity-70">local</span>
+        </label>
+      </div>
+      @if (providerError(); as message) {
+        <p class="max-w-xs text-sm text-warning">{{ message }}</p>
+      }
+    </fieldset>
+  </div>
+</form>
