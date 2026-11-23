@@ -7,6 +7,7 @@ import {
 import express from 'express';
 import { join } from 'node:path';
 import { createApiRouter } from './server/api/api.router';
+import { API_PREFIX } from './shared/api-endpoints';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
@@ -19,7 +20,7 @@ app.disable('x-powered-by');
  * The API: fetches pages and calls the AI on the server, so the browser never
  * hits CORS and never sees the API key. Registered before the Angular handler.
  */
-app.use('/api', createApiRouter());
+app.use(API_PREFIX, createApiRouter());
 
 /**
  * Serve static files from /browser

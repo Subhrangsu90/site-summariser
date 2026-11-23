@@ -1,18 +1,28 @@
 import { json, Router } from 'express';
+import { API_ENDPOINTS, API_PREFIX, type ApiEndpoint } from '../../shared/api-endpoints';
 import { ApiError, apiErrorHandler } from '../utils/api-error';
 import { providersHandler } from './providers.route';
 import { summariseHandler } from './summarise.route';
 
-/** Everything under /api. Express 5 forwards errors thrown in async handlers to apiErrorHandler. */
+/** The router is mounted at API_PREFIX, so each route is the endpoint path without it ("/api/health" → "/health"). */
+function route(endpoint: ApiEndpoint): string {
+  return API_ENDPOINTS[endpoint].slice(API_PREFIX.length);
+}
+
+/**
+ * Everything under API_PREFIX (/api). Routes come from src/shared/api-endpoints.ts,
+ * the same constants the Angular client uses. Express 5 forwards errors thrown in
+ * async handlers to apiErrorHandler.
+ */
 export function createApiRouter(): Router {
   const router = Router();
   router.use(json({ limit: '10kb' }));
 
-  router.get('/health', (_req, res) => {
+  router.get(route('health'), (_req, res) => {
     res.json({ ok: true });
   });
-  router.get('/providers', providersHandler);
-  router.post('/summarise', summariseHandler);
+  router.get(route('providers'), providersHandler);
+  router.post(route('summarise'), summariseHandler);
 
   router.use(() => {
     throw new ApiError('NOT_FOUND', 'Unknown API route.');
