@@ -3,11 +3,9 @@
 Paste a link to any public article and get a short AI summary: a headline, a TL;DR and the key points. Built with Angular 22 (SSR) and a small Express API in the same app, using Gemini in the cloud or Gemma 4 running locally through Ollama.
 
 - **Live demo:** [Demo URL](https://site-summariser.vercel.app/)
-- **Demo video:** _add link here_
+- **Demo video:** [Demo video](https://drive.google.com/file/d/1_NRgpSaHPQmRsOPR1tPZJIgAN_tNnMtg/view?usp=sharing)
 
-<!-- Screenshot: add docs/screenshot.png and uncomment
-![Site Summariser](docs/screenshot.png)
--->
+![Site Summariser](public/images/screenshot.png)
 
 ## Features
 
