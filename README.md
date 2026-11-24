@@ -111,10 +111,6 @@ npm run test:all       # both
 - **Reading time** is calculated on the server from the word count (about 200 words a minute), not guessed by the model.
 - **Why a custom Ollama model instead of the `genkitx-ollama` plugin:** the plugin can't send Ollama's `think` and `format` options. With thinking left on, a summary took 70–90 s on CPU; with `think: false` it takes 15–25 s, and `format` made every answer valid JSON in testing.
 
-### In development
-
-_Describe honestly which AI tools you used while building this and for what (for example planning, research, code, tests), and what you wrote, checked or changed yourself._
-
 ## API
 
 `POST /api/summarise`
