@@ -16,7 +16,7 @@ export function sampleSummary(overrides: Partial<SummaryResponse['summary']> = {
       readingTimeMin: 5,
       ...overrides,
     },
-    meta: { provider: 'gemini', model: 'gemini-flash-lite-latest', truncated: false, ms: 4174 },
+    meta: { provider: 'gemini', model: 'gemini-flash-lite-latest', truncated: false, chunks: 1, ms: 4174 },
   };
 }
 

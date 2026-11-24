@@ -1,5 +1,36 @@
 import { describe, expect, it } from 'vitest';
-import { countWords, truncate } from './truncate';
+import { countWords, splitIntoChunks, truncate } from './truncate';
+
+describe('splitIntoChunks', () => {
+  const sentence = (i: number) => `Sentence number ${i} is here.`; // 26–28 chars
+  const text = Array.from({ length: 40 }, (_, i) => sentence(i + 1)).join(' '); // ~1,150 chars
+
+  it('keeps short text as one part', () => {
+    expect(splitIntoChunks('Short text.', 100, 4)).toEqual({ chunks: ['Short text.'], truncated: false });
+  });
+
+  it('splits at sentence boundaries without losing or repeating text', () => {
+    const { chunks, truncated } = splitIntoChunks(text, 300, 10);
+    expect(truncated).toBe(false);
+    expect(chunks.length).toBeGreaterThan(3);
+    for (const chunk of chunks) {
+      expect(chunk.endsWith('.')).toBe(true);
+      expect(chunk.length).toBeLessThanOrEqual(300 * 1.15 + 30); // a small tail may join the last part
+    }
+    expect(chunks.join(' ')).toBe(text);
+  });
+
+  it('stops after maxChunks and reports the rest as truncated', () => {
+    const { chunks, truncated } = splitIntoChunks(text, 300, 2);
+    expect(chunks).toHaveLength(2);
+    expect(truncated).toBe(true);
+  });
+
+  it('adds a small tail to the last part instead of making a tiny part', () => {
+    const { chunks } = splitIntoChunks(`${'a'.repeat(95)}. Tail.`, 100, 4);
+    expect(chunks).toEqual([`${'a'.repeat(95)}. Tail.`]);
+  });
+});
 
 describe('truncate', () => {
   it('leaves text within the limit unchanged', () => {

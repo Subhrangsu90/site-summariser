@@ -5,7 +5,7 @@ import { GenkitError, z, type Genkit, type MessageData } from 'genkit';
  *
  * Why not the `genkitx-ollama` plugin: it puts all config inside Ollama's
  * `options`, so it can't send the top-level `think` and `format` fields.
- * Tested on gemma4:e2b (see docs/implementation-plan.md, "Ollama test results"):
+ * Tested directly against Ollama with gemma4:e2b on CPU:
  * - think: false   → 17–23 s per summary on CPU instead of 70–90 s
  * - format: schema → Ollama forces the reply to match our JSON schema (3/3 valid)
  */
@@ -23,7 +23,7 @@ export interface OllamaModelOptions {
   numCtx: number;
 }
 
-interface OllamaChatChunk {
+interface OllamaChatResponse {
   message?: { role: string; content: string };
   done?: boolean;
   done_reason?: string;
@@ -49,12 +49,13 @@ export function defineOllamaModel(ai: Genkit, opts: OllamaModelOptions) {
         constrained: 'all',
       },
     },
-    async (request, { abortSignal, sendChunk, streamingRequested }) => {
+    async (request, { abortSignal }) => {
       const schema = request.output?.constrained ? request.output.schema : undefined;
       const body = {
         model: opts.model,
         messages: request.messages.map(toOllamaMessage),
-        stream: streamingRequested,
+        stream: false, // one JSON reply
+
         think: false,
         format: schema ?? (request.output?.format === 'json' ? 'json' : undefined),
         keep_alive: '10m',
@@ -83,9 +84,7 @@ export function defineOllamaModel(ai: Genkit, opts: OllamaModelOptions) {
         });
       }
 
-      const result = streamingRequested
-        ? await readStream(res, (text) => sendChunk({ index: 0, role: 'model', content: [{ text }] }))
-        : await readJson(res);
+      const result = await readJson(res);
 
       return {
         message: { role: 'model', content: [{ text: result.text }] },
@@ -101,43 +100,8 @@ function toOllamaMessage(message: MessageData) {
   return { role, content: message.content.map((part) => part.text ?? '').join('') };
 }
 
-async function readJson(res: Response): Promise<OllamaChatChunk & { text: string }> {
-  const data = (await res.json()) as OllamaChatChunk;
+async function readJson(res: Response): Promise<OllamaChatResponse & { text: string }> {
+  const data = (await res.json()) as OllamaChatResponse;
   if (data.error) throw new GenkitError({ status: 'INTERNAL', message: `Ollama: ${data.error}` });
   return { ...data, text: data.message?.content ?? '' };
-}
-
-/** Ollama streams newline-delimited JSON objects; the last one has done: true and the token counts. */
-async function readStream(
-  res: Response,
-  onText: (text: string) => void,
-): Promise<OllamaChatChunk & { text: string }> {
-  if (!res.body) throw new GenkitError({ status: 'INTERNAL', message: 'Ollama returned no body.' });
-  const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
-  let buffer = '';
-  let text = '';
-  let last: OllamaChatChunk = {};
-
-  const handleLine = (line: string) => {
-    if (!line.trim()) return;
-    const chunk = JSON.parse(line) as OllamaChatChunk;
-    if (chunk.error) throw new GenkitError({ status: 'INTERNAL', message: `Ollama: ${chunk.error}` });
-    const piece = chunk.message?.content ?? '';
-    if (piece) {
-      text += piece;
-      onText(piece);
-    }
-    last = chunk;
-  };
-
-  for (;;) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += value;
-    const lines = buffer.split('\n');
-    buffer = lines.pop() ?? '';
-    lines.forEach(handleLine);
-  }
-  handleLine(buffer);
-  return { ...last, text };
 }

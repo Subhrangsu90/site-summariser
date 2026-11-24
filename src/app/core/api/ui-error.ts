@@ -7,7 +7,7 @@ export interface UiError {
   message: string;
 }
 
-/** Turns whatever an httpResource failed with into a UiError. */
+/** Turns whatever a request failed with into a UiError. */
 export function toUiError(error: unknown): UiError | undefined {
   if (!error) return undefined;
 

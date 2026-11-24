@@ -35,14 +35,21 @@ describe('SummaryCard', () => {
     expect(link?.rel).toContain('noopener');
   });
 
-  it('shows the "long page" note only when the page was truncated', async () => {
+  it('notes long pages: summarised in parts, or not fully covered', async () => {
     await render();
     expect(el.textContent).not.toContain('Long page');
 
-    const long = sampleSummary();
-    long.meta.truncated = true;
-    await render(long);
-    expect(el.textContent).toContain('Long page: this summary covers the first part.');
+    const inParts = sampleSummary();
+    inParts.meta.chunks = 3;
+    await render(inParts);
+    expect(el.textContent).toContain('Long page: summarised in 3 parts.');
+
+    const partly = sampleSummary();
+    partly.meta.chunks = 4;
+    partly.meta.truncated = true;
+    await render(partly);
+    expect(el.textContent).toContain("Very long page: this summary doesn't cover all of it.");
+    expect(el.textContent).not.toContain('summarised in 4 parts');
   });
 
   it('copies the summary as Markdown and confirms it', async () => {

@@ -15,4 +15,11 @@ export const ModelSummarySchema = z.object({
 
 export type ModelSummary = z.infer<typeof ModelSummarySchema>;
 
+/** Notes on one part of a long page (the "map" step before the final summary). */
+export const ChunkNotesSchema = z.object({
+  keyPoints: z.array(z.string()).describe('Short notes, one fact each; empty if the part has nothing worth keeping'),
+});
+
+export type ChunkNotes = z.infer<typeof ChunkNotesSchema>;
+
 export const NOT_SUMMARISABLE = 'NOT_SUMMARISABLE';

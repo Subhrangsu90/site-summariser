@@ -42,8 +42,10 @@
 
   @if (meta.truncated) {
     <p class="rounded-xl bg-warning-surface px-3 py-2 text-sm text-warning">
-      Long page: this summary covers the first part.
+      Very long page: this summary doesn't cover all of it.
     </p>
+  } @else if (meta.chunks > 1) {
+    <p class="rounded-xl bg-mist px-3 py-2 text-sm text-graphite">Long page: summarised in {{ meta.chunks }} parts.</p>
   }
 
   <footer class="flex flex-col gap-3 border-t border-hairline pt-4 text-sm text-graphite">

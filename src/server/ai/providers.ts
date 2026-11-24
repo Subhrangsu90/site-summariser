@@ -17,8 +17,14 @@ export interface Provider {
   modelConfig: Record<string, unknown>;
   /** Time for the first attempt; the retry gets whatever is left of 2× this. */
   timeoutMs: number;
-  /** Page text is cut to this many characters before it is sent. */
+  /** Size of one model input. Longer pages are split into parts of this size. */
   maxChars: number;
+  /** Most parts a long page is split into; text beyond that is left out (`truncated`). */
+  maxChunks: number;
+  /** Summarise the parts at the same time (cloud) or one after another (a single local GPU/CPU). */
+  parallelChunks: boolean;
+  /** The whole request, fetch included, must finish within this. */
+  requestBudgetMs: number;
 }
 
 export interface Availability {
@@ -40,9 +46,13 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
         : undefined,
     // Gemini 3 models are tuned for their default temperature, so we don't lower it.
     modelConfig: {},
-    // First attempt; both attempts share 2× this (40 s). Fetch (≤10 s) + 40 s stays under Vercel's 60 s limit.
+    // First attempt; both attempts share 2× this (40 s), capped by requestBudgetMs.
     timeoutMs: 20_000,
     maxChars: 12_000,
+    maxChunks: 4, // up to ~48k characters
+    parallelChunks: true,
+    // Vercel stops a function at 60 s; leave a margin for sending the response.
+    requestBudgetMs: 52_000,
   },
   ollama: {
     id: 'ollama',
@@ -54,6 +64,10 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
     timeoutMs: 120_000,
     // ~3.3 characters per token, so ~2.4k tokens: well inside num_ctx and quick on CPU.
     maxChars: 8_000,
+    // ~20–25 s per part on CPU, so 3 parts + the final summary ≈ 1.5 minutes.
+    maxChunks: 3,
+    parallelChunks: false, // one local model: parallel requests would only queue
+    requestBudgetMs: 360_000, // local only, no hosting limit
   },
 };
 

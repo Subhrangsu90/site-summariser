@@ -13,8 +13,8 @@ export class LoadingSkeleton {
 
   protected readonly hint = computed(() =>
     this.provider() === 'ollama'
-      ? 'Running Gemma on this computer. The first run can take up to a minute.'
-      : 'This usually takes a few seconds.',
+      ? 'Running Gemma on this computer. The first run can take up to a minute, long pages longer.'
+      : 'This usually takes a few seconds, a little longer for long pages.',
   );
 
   constructor() {

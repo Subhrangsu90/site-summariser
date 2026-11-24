@@ -66,11 +66,15 @@ export class Summariser {
   constructor() {
     // Save every new live result to history. An effect fits here: it syncs
     // state out to localStorage and changes nothing the template reads.
+    let saved: SummaryResponse | undefined;
     effect(() => {
       if (!this.summary.hasValue()) return;
       const result = this.summary.value();
       const mode = untracked(this.request)?.mode;
-      if (mode) untracked(() => this.history.add(result, mode));
+      if (mode && result !== saved) {
+        saved = result;
+        untracked(() => this.history.add(result, mode));
+      }
     });
   }
 
@@ -85,7 +89,7 @@ export class Summariser {
   }
 
   protected reopen(entry: HistoryEntry): void {
-    this.request.set(undefined); // clears any loading or error state
+    this.request.set(undefined); // cancels a running request and clears its state
     this.reopened.set(entry);
     this.resultRegion()?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }

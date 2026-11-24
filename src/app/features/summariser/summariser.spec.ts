@@ -58,6 +58,16 @@ describe('Summariser page', () => {
     expect(el.textContent).toContain('Recent summaries'); // saved to history
   });
 
+  it('notes when a long page was summarised in parts', async () => {
+    await submit('en.wikipedia.org/wiki/Lighthouse');
+    const result = sampleSummary();
+    result.meta.chunks = 3;
+    http.expectOne('/api/summarise').flush(result);
+    await fixture.whenStable();
+
+    expect(el.textContent).toContain('Long page: summarised in 3 parts.');
+  });
+
   it('goes idle → loading → error, with a friendly message and no pointless retry', async () => {
     await submit('example.com/private');
     http
@@ -77,7 +87,10 @@ describe('Summariser page', () => {
     await submit('example.com/article');
     http
       .expectOne('/api/summarise')
-      .flush({ error: { code: 'TIMEOUT', message: 'The site took too long to respond.' } }, { status: 504, statusText: 'Gateway Timeout' });
+      .flush(
+        { error: { code: 'TIMEOUT', message: 'The site took too long to respond.' } },
+        { status: 504, statusText: 'Gateway Timeout' },
+      );
     await fixture.whenStable();
 
     el.querySelector<HTMLButtonElement>('[role="alert"] button')!.click();

@@ -35,8 +35,10 @@ export interface Summary {
 export interface SummaryMeta {
   provider: ProviderId;
   model: string;
-  /** True when the page was cut to fit the model's input limit. */
+  /** True when some of the page isn't covered: too long even in parts, or a part couldn't be summarised. */
   truncated: boolean;
+  /** How many parts the page was summarised in (1 = in one go; more for long pages). */
+  chunks: number;
   ms: number;
 }
 
