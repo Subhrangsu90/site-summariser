@@ -1,18 +1,11 @@
 import type { RequestHandler } from 'express';
-import { z } from 'zod';
-import { PROVIDER_IDS, SUMMARY_MODES, type SummaryResponse } from '../../shared/api.types';
+import { SummariseRequestSchema, type SummaryResponse } from '../../shared/api.types';
 import { summarise } from '../services/summarise.service';
 import { ApiError } from '../utils/api-error';
 
-const BodySchema = z.object({
-  url: z.string().trim().min(1).max(2048),
-  mode: z.enum(SUMMARY_MODES).default('tldr'),
-  provider: z.enum(PROVIDER_IDS).optional(),
-});
-
 /** POST /api/summarise */
 export const summariseHandler: RequestHandler = async (req, res) => {
-  const parsed = BodySchema.safeParse(req.body);
+  const parsed = SummariseRequestSchema.safeParse(req.body);
   if (!parsed.success) {
     const field = parsed.error.issues[0]?.path[0];
     throw field === 'url'

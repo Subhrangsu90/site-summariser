@@ -1,5 +1,6 @@
 import { googleAI } from '@genkit-ai/google-genai';
 import type { ModelReference } from 'genkit';
+import { z } from 'zod';
 import type { ProviderId } from '../../shared/api.types';
 import { config } from '../config';
 import './genkit'; // registers the Ollama model before anything uses its name
@@ -13,7 +14,6 @@ export interface Provider {
   model: ModelReference<any> | string;
   /** Tried for the retry when the main model fails, e.g. because it is overloaded. */
   fallback?: { modelName: string; model: ModelReference<any> | string };
-  /** Model settings for this provider. */
   modelConfig: Record<string, unknown>;
   /** Time for the first attempt; the retry gets whatever is left of 2× this. */
   timeoutMs: number;
@@ -32,7 +32,6 @@ export interface Availability {
   reason?: string;
 }
 
-/** Everything that differs between providers lives here; the rest of the code is shared. */
 export const PROVIDERS: Record<ProviderId, Provider> = {
   gemini: {
     id: 'gemini',
@@ -71,6 +70,11 @@ export const PROVIDERS: Record<ProviderId, Provider> = {
   },
 };
 
+/** The part of Ollama's GET /api/tags answer that we use. */
+const OllamaTagsSchema = z.object({
+  models: z.array(z.object({ name: z.string(), model: z.string().optional() })).default([]),
+});
+
 const OLLAMA_CHECK_TTL_MS = 5_000;
 let ollamaCheck: { at: number; result: Availability } | undefined;
 
@@ -94,7 +98,9 @@ async function checkOllama(): Promise<Availability> {
     const res = await fetch(`${server}/api/tags`, { signal: AbortSignal.timeout(1_500) });
     if (!res.ok) return { available: false, reason: `Ollama answered with HTTP ${res.status}.` };
 
-    const { models = [] } = (await res.json()) as { models?: { name: string; model?: string }[] };
+    const tags = OllamaTagsSchema.safeParse(await res.json());
+    if (!tags.success) return { available: false, reason: 'Ollama sent an unexpected answer.' };
+    const { models } = tags.data;
     const wanted = model.includes(':') ? model : `${model}:latest`;
     const installed = models.some((m) => m.name === wanted || m.model === wanted);
     return installed

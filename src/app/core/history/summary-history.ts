@@ -1,18 +1,24 @@
 import { isPlatformBrowser } from '@angular/common';
 import { afterNextRender, inject, PLATFORM_ID, Service, signal } from '@angular/core';
-import type { SummaryMode, SummaryResponse } from '../../../shared/api.types';
+import * as z from 'zod/mini';
+import {
+  SummaryModeSchema,
+  SummaryResponseSchema,
+  type SummaryMode,
+  type SummaryResponse,
+} from '../../../shared/api.types';
 
-export interface HistoryEntry {
-  id: string;
-  savedAt: number;
-  mode: SummaryMode;
-  result: SummaryResponse;
-}
+export const HistoryEntrySchema = z.object({
+  id: z.string().check(z.minLength(1)),
+  savedAt: z.number(),
+  mode: SummaryModeSchema,
+  result: SummaryResponseSchema,
+});
+export type HistoryEntry = z.infer<typeof HistoryEntrySchema>;
 
 export const HISTORY_STORAGE_KEY = 'site-summariser.history.v1';
 export const HISTORY_LIMIT = 10;
 
-/** The last 10 summaries, kept in this browser's localStorage. */
 @Service()
 export class SummaryHistory {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
@@ -65,24 +71,17 @@ function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-/** Reads and sanity-checks saved history; anything unexpected is dropped. */
 export function readStorage(): HistoryEntry[] {
   try {
     const data: unknown = JSON.parse(localStorage.getItem(HISTORY_STORAGE_KEY) ?? '[]');
-    return Array.isArray(data) ? data.filter(isHistoryEntry).slice(0, HISTORY_LIMIT) : [];
+    if (!Array.isArray(data)) return [];
+    return data
+      .flatMap((item) => {
+        const entry = HistoryEntrySchema.safeParse(item);
+        return entry.success ? [entry.data] : [];
+      })
+      .slice(0, HISTORY_LIMIT);
   } catch {
     return [];
   }
-}
-
-function isHistoryEntry(value: unknown): value is HistoryEntry {
-  const e = value as Partial<HistoryEntry> | null;
-  return (
-    typeof e?.id === 'string' &&
-    typeof e.savedAt === 'number' &&
-    typeof e.mode === 'string' &&
-    typeof e.result?.source?.url === 'string' &&
-    typeof e.result.summary?.title === 'string' &&
-    Array.isArray(e.result.summary.keyPoints)
-  );
 }

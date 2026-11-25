@@ -9,7 +9,6 @@ const MODE_LABELS: Record<SummaryMode, string> = {
   detailed: 'Detailed',
 };
 
-/** Recent summaries: click one to reopen it. Purely presentational. */
 @Component({
   selector: 'app-history-list',
   imports: [RelativeTimePipe],

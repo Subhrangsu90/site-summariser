@@ -1,12 +1,9 @@
-import { PROVIDER_IDS, type ProviderId } from '../shared/api.types';
+import { ProviderIdSchema, type ProviderId } from '../shared/api.types';
 
-// Load .env for local development. On a host like Render the variables are set
-// in the dashboard and there is no .env file, which is fine.
+// Load .env for local development; hosted deployments set real environment variables.
 try {
   process.loadEnvFile();
-} catch {
-  // No .env file: use the real environment.
-}
+} catch {}
 
 function readString(name: string, fallback: string): string {
   const value = process.env[name]?.trim();
@@ -25,20 +22,17 @@ function readInt(name: string, fallback: number): number {
 }
 
 function readProvider(name: string, fallback: ProviderId): ProviderId {
-  const value = process.env[name]?.trim() as ProviderId | undefined;
-  return value && PROVIDER_IDS.includes(value) ? value : fallback;
+  const parsed = ProviderIdSchema.safeParse(process.env[name]?.trim());
+  return parsed.success ? parsed.data : fallback;
 }
 
-/** All environment configuration, read once at startup. Server-only. */
 export const config = {
   defaultProvider: readProvider('DEFAULT_PROVIDER', 'gemini'),
   gemini: {
     apiKey: readString('GEMINI_API_KEY', ''),
-    // Flash-Lite: ~4–5 s per summary in testing.
     model: readString('GEMINI_MODEL', 'gemini-flash-lite-latest'),
-    // Used for the retry when the main model fails (e.g. 503 "high demand"). "none" turns it off.
-    // A pinned previous-generation model: the "-latest" aliases point at the newest, busiest
-    // models (gemini-flash-latest returned 503 while gemini-3.6-flash answered).
+    // Retry model when the main one fails (e.g. 503 "high demand"). "none" turns it off.
+    // Pinned rather than a "-latest" alias, which points at the busiest models.
     fallbackModel: readOptional('GEMINI_FALLBACK_MODEL', 'gemini-3.6-flash'),
   },
   ollama: {

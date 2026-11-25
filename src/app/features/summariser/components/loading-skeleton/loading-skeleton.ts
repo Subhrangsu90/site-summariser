@@ -1,7 +1,6 @@
 import { afterNextRender, Component, computed, DestroyRef, inject, input, signal } from '@angular/core';
 import type { ProviderId } from '../../../../../shared/api.types';
 
-/** Placeholder card shown while a summary is being made, with an honest elapsed-time counter. */
 @Component({
   selector: 'app-loading-skeleton',
   templateUrl: './loading-skeleton.html',

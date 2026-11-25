@@ -9,11 +9,7 @@ function route(endpoint: ApiEndpoint): string {
   return API_ENDPOINTS[endpoint].slice(API_PREFIX.length);
 }
 
-/**
- * Everything under API_PREFIX (/api). Routes come from src/shared/api-endpoints.ts,
- * the same constants the Angular client uses. Express 5 forwards errors thrown in
- * async handlers to apiErrorHandler.
- */
+/** Express 5 forwards errors thrown in async handlers to apiErrorHandler. */
 export function createApiRouter(): Router {
   const router = Router();
   router.use(json({ limit: '10kb' }));

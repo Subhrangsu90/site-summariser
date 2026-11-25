@@ -83,6 +83,17 @@ describe('Summariser page', () => {
     expect(alert?.querySelector('button')).toBeNull();
   });
 
+  it('shows an error when a successful response has the wrong shape', async () => {
+    await submit('example.com/article');
+    const result = sampleSummary() as unknown as Record<string, unknown>;
+    delete result['meta'];
+    http.expectOne('/api/summarise').flush(result);
+    await fixture.whenStable();
+
+    expect(el.querySelector('app-summary-card')).toBeNull();
+    expect(el.querySelector('[role="alert"]')?.textContent).toContain('The server sent an unexpected answer');
+  });
+
   it('offers "Try again" for temporary errors and retries the same request', async () => {
     await submit('example.com/article');
     http

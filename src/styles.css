@@ -1,9 +1,9 @@
 @import 'tailwindcss';
 
 /*
- * site-summarizer design tokens. Same zinc theme as before, made explicit.
+ * Design tokens.
  *   paper   #FFFFFF  reading surface
- *   ink     #18181B  text, your messages, primary actions   (zinc-900)
+ *   ink     #18181B  text, primary actions                  (zinc-900)
  *   graphite #71717A secondary text                          (zinc-500)
  *   mist    #F4F4F5  sidebar, hovers                         (zinc-100)
  *   hairline #E4E4E7 every border                            (zinc-200)
@@ -19,13 +19,9 @@
 
     /* Semantic colors, so nothing in a template names a light-only shade. */
     --color-ink-soft: #3f3f46;
-    /* rail items, secondary buttons */
     --color-ink-hover: #3f3f46;
-    /* hover on ink buttons */
     --color-hover: rgb(228 228 231 / 0.6);
-    /* hover on quiet rows */
     --color-bubble: #18181b;
-    /* your chat messages */
     --color-on-bubble: #ffffff;
     --color-danger-surface: #fef2f2;
     --color-danger-hover: #fee2e2;
@@ -38,16 +34,11 @@
     --color-warning: #78350f;
 }
 
-/*
- * Dark mode. "System" (no data-theme) follows the OS; Settings can force light or
- * dark, stored in this browser and applied before first paint (see index.html).
- * Only the tokens change, so every utility and the A2UI cards follow.
- */
+/* Dark mode follows the OS. Only the tokens change, so every utility follows. */
 :root {
     color-scheme: light;
 }
 
-/* The same values twice: once for "System" on a dark OS, once for "Dark" chosen in Settings. */
 @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
         color-scheme: dark;
@@ -97,7 +88,6 @@
 }
 
 :root {
-    /* A2UI cards (rendered in shadow DOM) pick these up, so cards match the app. */
     --a2ui-color-background: var(--color-paper);
     --a2ui-color-on-background: var(--color-ink);
     --a2ui-color-surface: var(--color-paper);
@@ -110,13 +100,11 @@
     --a2ui-font-family-title: inherit;
     --a2ui-font-size: 0.9375rem;
     --a2ui-font-scale: 1.15;
-    /* Explicit small sizes: the scale alone made captions 10.6px. */
     --a2ui-font-size-s: 0.875rem;
     --a2ui-font-size-xs: 0.8125rem;
     --a2ui-line-height-body: 1.5;
     --a2ui-card-background: var(--color-paper);
     --a2ui-card-border-radius: 14px;
-    /* One hairline border, no shadow, no outer margin: cards align with the text column. */
     --a2ui-card-border: 1px solid var(--color-hairline);
     --a2ui-card-box-shadow: none;
     --a2ui-card-margin: 0;

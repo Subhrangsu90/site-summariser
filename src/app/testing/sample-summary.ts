@@ -1,6 +1,5 @@
 import type { ProvidersResponse, SummaryResponse } from '../../shared/api.types';
 
-/** Test data only. */
 export function sampleSummary(overrides: Partial<SummaryResponse['summary']> = {}): SummaryResponse {
   return {
     source: {

@@ -5,9 +5,8 @@ import { GenkitError, z, type Genkit, type MessageData } from 'genkit';
  *
  * Why not the `genkitx-ollama` plugin: it puts all config inside Ollama's
  * `options`, so it can't send the top-level `think` and `format` fields.
- * Tested directly against Ollama with gemma4:e2b on CPU:
- * - think: false   → 17–23 s per summary on CPU instead of 70–90 s
- * - format: schema → Ollama forces the reply to match our JSON schema (3/3 valid)
+ * - think: false makes replies several times faster on CPU.
+ * - format: <JSON schema> makes Ollama return JSON that matches the schema.
  */
 
 export const OllamaConfigSchema = z.object({
@@ -54,7 +53,7 @@ export function defineOllamaModel(ai: Genkit, opts: OllamaModelOptions) {
       const body = {
         model: opts.model,
         messages: request.messages.map(toOllamaMessage),
-        stream: false, // one JSON reply
+        stream: false,
 
         think: false,
         format: schema ?? (request.output?.format === 'json' ? 'json' : undefined),

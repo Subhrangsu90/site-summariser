@@ -1,67 +1,81 @@
+import * as z from 'zod/mini';
+
 /**
- * API contract shared by the Angular client and the Express server.
- * Keep this file free of runtime dependencies: it is bundled into the browser.
+ * API contract shared by the client and the server. Bundled into the browser,
+ * so it uses the tree-shakable `zod/mini` and no Node or Angular imports.
  */
 
 export const SUMMARY_MODES = ['tldr', 'bullets', 'detailed'] as const;
-export type SummaryMode = (typeof SUMMARY_MODES)[number];
+export const SummaryModeSchema = z.enum(SUMMARY_MODES);
+export type SummaryMode = z.infer<typeof SummaryModeSchema>;
 
 export const PROVIDER_IDS = ['gemini', 'ollama'] as const;
-export type ProviderId = (typeof PROVIDER_IDS)[number];
+export const ProviderIdSchema = z.enum(PROVIDER_IDS);
+export type ProviderId = z.infer<typeof ProviderIdSchema>;
+
+export const MAX_URL_LENGTH = 2048;
 
 /** POST /api/summarise */
-export interface SummariseRequest {
-  url: string;
-  mode: SummaryMode;
+export const SummariseRequestSchema = z.object({
+  // The full URL check (scheme, SSRF guard) is server-only: src/server/utils/validate-url.ts.
+  url: z.string().check(z.trim(), z.minLength(1), z.maxLength(MAX_URL_LENGTH)),
+  mode: z._default(SummaryModeSchema, 'tldr'),
   /** Defaults to the server's DEFAULT_PROVIDER. */
-  provider?: ProviderId;
-}
+  provider: z.optional(ProviderIdSchema),
+});
+export type SummariseRequest = z.infer<typeof SummariseRequestSchema>;
 
-export interface SummarySource {
-  url: string;
-  siteName: string;
-  title: string;
-  favicon: string | null;
-}
+export const SummarySourceSchema = z.object({
+  url: z.string(),
+  siteName: z.string(),
+  title: z.string(),
+  favicon: z.nullable(z.string()),
+});
+export type SummarySource = z.infer<typeof SummarySourceSchema>;
 
-export interface Summary {
-  title: string;
-  tldr: string;
-  keyPoints: string[];
+export const SummarySchema = z.object({
+  title: z.string(),
+  tldr: z.string(),
+  keyPoints: z.array(z.string()),
   /** Calculated on the server from the word count (~200 words a minute). */
-  readingTimeMin: number;
-}
+  readingTimeMin: z.int().check(z.positive()),
+});
+export type Summary = z.infer<typeof SummarySchema>;
 
-export interface SummaryMeta {
-  provider: ProviderId;
-  model: string;
+export const SummaryMetaSchema = z.object({
+  provider: ProviderIdSchema,
+  model: z.string(),
   /** True when some of the page isn't covered: too long even in parts, or a part couldn't be summarised. */
-  truncated: boolean;
+  truncated: z.boolean(),
   /** How many parts the page was summarised in (1 = in one go; more for long pages). */
-  chunks: number;
-  ms: number;
-}
+  chunks: z.int().check(z.positive()),
+  ms: z.number().check(z.nonnegative()),
+});
+export type SummaryMeta = z.infer<typeof SummaryMetaSchema>;
 
-export interface SummaryResponse {
-  source: SummarySource;
-  summary: Summary;
-  meta: SummaryMeta;
-}
+export const SummaryResponseSchema = z.object({
+  source: SummarySourceSchema,
+  summary: SummarySchema,
+  meta: SummaryMetaSchema,
+});
+export type SummaryResponse = z.infer<typeof SummaryResponseSchema>;
 
 /** GET /api/providers */
-export interface ProviderInfo {
-  id: ProviderId;
-  label: string;
-  model: string;
-  available: boolean;
+export const ProviderInfoSchema = z.object({
+  id: ProviderIdSchema,
+  label: z.string(),
+  model: z.string(),
+  available: z.boolean(),
   /** Why it is unavailable, shown in the UI. */
-  reason?: string;
-}
+  reason: z.optional(z.string()),
+});
+export type ProviderInfo = z.infer<typeof ProviderInfoSchema>;
 
-export interface ProvidersResponse {
-  default: ProviderId;
-  providers: ProviderInfo[];
-}
+export const ProvidersResponseSchema = z.object({
+  default: ProviderIdSchema,
+  providers: z.array(ProviderInfoSchema),
+});
+export type ProvidersResponse = z.infer<typeof ProvidersResponseSchema>;
 
 export const ERROR_CODES = [
   'INVALID_REQUEST',
@@ -76,9 +90,11 @@ export const ERROR_CODES = [
   'NOT_FOUND',
   'INTERNAL',
 ] as const;
-export type ErrorCode = (typeof ERROR_CODES)[number];
+export const ErrorCodeSchema = z.enum(ERROR_CODES);
+export type ErrorCode = z.infer<typeof ErrorCodeSchema>;
 
 /** Every API error has this shape. */
-export interface ApiErrorBody {
-  error: { code: ErrorCode; message: string };
-}
+export const ApiErrorBodySchema = z.object({
+  error: z.object({ code: ErrorCodeSchema, message: z.string() }),
+});
+export type ApiErrorBody = z.infer<typeof ApiErrorBodySchema>;

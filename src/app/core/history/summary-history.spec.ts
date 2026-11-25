@@ -54,5 +54,9 @@ describe('SummaryHistory', () => {
 
     localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([{ id: 1 }, 'junk', null]));
     expect(readStorage()).toEqual([]);
+
+    const good = { id: 'a', savedAt: 1, mode: 'tldr', result: sampleSummary() };
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify([good, { ...good, id: 'b', mode: 'haiku' }]));
+    expect(readStorage().map((e) => e.id)).toEqual(['a']);
   });
 });

@@ -35,8 +35,6 @@ export async function scrapePage(rawUrl: string, signal?: AbortSignal): Promise<
   return extractContent(html, url);
 }
 
-// ---------------------------------------------------------------- fetching
-
 export async function fetchHtml(
   rawUrl: string,
   signal?: AbortSignal,
@@ -140,8 +138,6 @@ function decode(bytes: Uint8Array, contentType: string): string {
     return new TextDecoder('utf-8').decode(bytes); // unknown charset label
   }
 }
-
-// ---------------------------------------------------------------- extraction
 
 export function extractContent(html: string, url: string): ScrapedPage {
   // A silent console: real pages produce lots of CSS parse warnings in jsdom.

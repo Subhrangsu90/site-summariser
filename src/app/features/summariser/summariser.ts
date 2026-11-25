@@ -14,14 +14,6 @@ interface SetupProblem {
   lines: string[];
 }
 
-/**
- * The summariser screen (smart container). It owns the state and the
- * child components only display it.
- *
- * Pattern from angular.dev/ai/design-patterns: the form's live value is kept
- * separate from the submitted `request`, and only `request` drives the
- * httpResource, so nothing is fetched while the user types.
- */
 @Component({
   selector: 'app-summariser',
   imports: [UrlForm, SummaryCard, LoadingSkeleton, ErrorState, HistoryList],
@@ -41,7 +33,6 @@ export class Summariser {
   protected readonly reopened = signal<HistoryEntry | undefined>(undefined);
   protected readonly historyItems = this.history.items;
 
-  /** What the card shows: a reopened entry, or the latest live result. */
   protected readonly result = computed<SummaryResponse | undefined>(
     () => this.reopened()?.result ?? (this.summary.hasValue() ? this.summary.value() : undefined),
   );
@@ -50,7 +41,6 @@ export class Summariser {
     this.api.providers.hasValue() ? this.api.providers.value() : undefined,
   );
 
-  /** Shown when no AI model can be used at all, with what to do about it. */
   protected readonly setupProblem = computed<SetupProblem | undefined>(() => {
     if (this.api.providers.error()) {
       return { title: "Can't reach the server", lines: ['Check that the app server is running, then reload the page.'] };
@@ -64,8 +54,6 @@ export class Summariser {
   });
 
   constructor() {
-    // Save every new live result to history. An effect fits here: it syncs
-    // state out to localStorage and changes nothing the template reads.
     let saved: SummaryResponse | undefined;
     effect(() => {
       if (!this.summary.hasValue()) return;

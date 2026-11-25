@@ -6,7 +6,6 @@ import { toMarkdown, toPlainText } from '../../summary-text';
 
 type CopyState = 'text' | 'markdown' | 'failed' | undefined;
 
-/** Displays one summary, with copy buttons. */
 @Component({
   selector: 'app-summary-card',
   imports: [ReadingTimePipe, DurationPipe],

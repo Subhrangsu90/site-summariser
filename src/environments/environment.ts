@@ -14,6 +14,5 @@ export const environment = {
    * if the API is ever hosted separately (that server would then need CORS).
    */
   apiBaseUrl: '',
-  /** API routes (shared with the server router): health, providers, summarise. */
   apiEndpoints: API_ENDPOINTS,
 };
